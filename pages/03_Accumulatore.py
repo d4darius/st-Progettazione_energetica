@@ -9,7 +9,6 @@ if __name__ == "__main__":
 
     Misto = []
     n = math.sqrt(0.90)
-    E_Bess = 1
     Produzione_Diesel = 0
     Tot_incr = 0
     Max_Pow = 0
@@ -95,14 +94,15 @@ if __name__ == "__main__":
             Misto,
             columns=["Time","Totale","SOC","Consumi","Diesel"]
         )
-        st.header("Andamento :green[accumulatore]")
-        st.line_chart(data = data_chart, x = "Time", y = "SOC")
-        st.header("Andamento Produzione :red[Diesel] (MW)")
-        st.line_chart(data = data_chart, x = "Time", y = "Diesel")
-        col1, col2, col3 = st.columns(3)
-        col1.metric("Numero di Cicli", round(Tot_incr/E_Bess,2))
-        col2.metric("Potenza dell'accumulatore", round(Max_Pow,2))
-        col3.metric("Durata Accumulatore", round(E_Bess/Max_Pow,1))
-        with st.expander("Tabella Dati Accumulatore"):
-            st.header("Dati dell'Accumulatore")
-            st.table(accumulatore_tab)
+        if E_Bess != 0 and Max_Pow != 0:
+            st.header("Andamento :green[accumulatore]")
+            st.line_chart(data = data_chart, x = "Time", y = "SOC")
+            st.header("Andamento Produzione :red[Diesel] (MW)")
+            st.line_chart(data = data_chart, x = "Time", y = "Diesel")
+            col1, col2, col3 = st.columns(3)
+            col1.metric("Numero di Cicli", round(Tot_incr/E_Bess,2))
+            col2.metric("Potenza dell'accumulatore", round(Max_Pow,2))
+            col3.metric("Durata Accumulatore", round(E_Bess/Max_Pow,1))
+            with st.expander("Tabella Dati Accumulatore"):
+                st.header("Dati dell'Accumulatore")
+                st.table(accumulatore_tab)
