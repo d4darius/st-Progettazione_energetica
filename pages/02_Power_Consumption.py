@@ -112,7 +112,7 @@ if __name__ == "__main__":
         read = csv.reader(input)
         counter = 0
         for (i,row) in enumerate(read):
-            Misto.append({"Time":i,"Solare":F*float(row[1]),"Eolico":E*float(row[3]),"WEC":W*float(row[5]),"Totale":(F*float(row[1])+E*float(row[3])+W*float(row[5])),"Consumi":float(row[13]),"SOC":0,"E_bess_t":0,"Diesel":0})
+            Misto.append({"Time":i,"Solare":F*float(row[1]),"Eolico":E*float(row[3]),"WEC":W*float(row[5]),"Totale Produzione":(F*float(row[1])+E*float(row[3])+W*float(row[5])),"Consumi":float(row[13]),"SOC":0,"E_bess_t":0,"Diesel":0})
             CF_eolico += float(row[3])
             CF_solare += float(row[1])
             CF_WEC += float(row[5])
@@ -129,12 +129,12 @@ if __name__ == "__main__":
         for (i,elem) in enumerate(Misto):
             if i != 0:
                 #abbiamo energia in ecccesso
-                if elem["Consumi"] - elem["Totale"] < 0:
+                if elem["Consumi"] - elem["Totale Produzione"] < 0:
                     #abbiamo spazio nell'accumulatore
                     if Misto[i-1]["SOC"] < 1:
                         #Lo spazio nell'accumulatore è sufficiente
-                        if (1-Misto[i-1]["SOC"])*E_Bess > abs(elem["Totale"] - elem["Consumi"])*n:
-                            elem["SOC"] = Misto[i-1]["SOC"] + ((abs(elem["Totale"] - elem["Consumi"])*n)/E_Bess)
+                        if (1-Misto[i-1]["SOC"])*E_Bess > abs(elem["Totale Produzione"] - elem["Consumi"])*n:
+                            elem["SOC"] = Misto[i-1]["SOC"] + ((abs(elem["Totale Produzione"] - elem["Consumi"])*n)/E_Bess)
                         #Lo spazio nell'accumulatore si riempie
                         else:
                             elem["SOC"] = 1
@@ -146,30 +146,30 @@ if __name__ == "__main__":
                     #abbiamo energia accumulata
                     if Misto[i-1]["SOC"] > 0:
                         #L'accumulatore basta per quello che serve nell'ora
-                        if (Misto[i-1]["SOC"])*E_Bess > (elem["Consumi"] - elem["Totale"])/n:
-                            elem["SOC"] = Misto[i-1]["SOC"] - (elem["Consumi"] - elem["Totale"])/(E_Bess*n)
+                        if (Misto[i-1]["SOC"])*E_Bess > (elem["Consumi"] - elem["Totale Produzione"])/n:
+                            elem["SOC"] = Misto[i-1]["SOC"] - (elem["Consumi"] - elem["Totale Produzione"])/(E_Bess*n)
                         #Nell'accumulatore non abbiamo abbastanza energia
                         else:
-                            elem["Diesel"] = (elem["Consumi"] - elem["Totale"]) - ((Misto[i-1]["SOC"])*E_Bess*n)
+                            elem["Diesel"] = (elem["Consumi"] - elem["Totale Produzione"]) - ((Misto[i-1]["SOC"])*E_Bess*n)
                             elem["SOC"] = 0
                             Produzione_Diesel += elem["Diesel"]
                     #non abbiamo energia nell'accumulatore
                     else:
-                        elem["Diesel"] = (elem["Consumi"] - elem["Totale"])
+                        elem["Diesel"] = (elem["Consumi"] - elem["Totale Produzione"])
                         Produzione_Diesel += elem["Diesel"]
             #siamo nella prima riga
             else:
                 #abbiamo energia in ecccesso
-                if elem["Consumi"] - elem["Totale"] < 0:
+                if elem["Consumi"] - elem["Totale Produzione"] < 0:
                     #Lo spazio nell'accumulatore è sufficiente
-                    if E_Bess > abs(elem["Totale"] - elem["Consumi"]):
-                        elem["SOC"] = (abs(elem["Totale"] - elem["Consumi"])/E_Bess)
+                    if E_Bess > abs(elem["Totale Produzione"] - elem["Consumi"]):
+                        elem["SOC"] = (abs(elem["Totale Produzione"] - elem["Consumi"])/E_Bess)
                     #Lo spazio nell'accumulatore si riempie
                     else:
                         elem["SOC"] = 1
                 #ci manca dell'energia - accumulatore scarico per forza
                 else:
-                    elem["Diesel"] = (elem["Consumi"] - elem["Totale"])
+                    elem["Diesel"] = (elem["Consumi"] - elem["Totale Produzione"])
                     Produzione_Diesel = elem["Diesel"]
     #Penetrazione FER
     Pen_FER = (1-(Produzione_Diesel/Consumo_totale))*100
@@ -177,13 +177,13 @@ if __name__ == "__main__":
     #Plotter del grafico dei consumi
     data_misti = pd.DataFrame(
         Misto,
-        columns=["Time","Solare","Eolico","WEC","Totale","Consumi"]
+        columns=["Time","Solare","Eolico","WEC","Totale Produzione","Consumi"]
     )
 
     #Grafici valori
     st.header("Curva :green[Customizzata] di tutte le potenze annuali")
     st.markdown("Totali FER")
-    st.line_chart(data=data_misti, x = 'Time', y = ["Totale","Consumi"])
+    st.line_chart(data=data_misti, x = 'Time', y = ["Totale Produzione","Consumi"])
     st.markdown("FER divise")
     st.line_chart(data=data_misti, x = 'Time', y = ["Consumi","Solare","Eolico","WEC"])
 
