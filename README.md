@@ -1,0 +1,1 @@
+# st-Progettazione_energetica
