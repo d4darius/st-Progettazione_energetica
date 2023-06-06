@@ -5,12 +5,20 @@ import pandas as pd
 if __name__ == "__main__":
     st.title("☀️ Produzione FER")
 
+    isola = st.selectbox("Seleziona l'isola",["Ponza","Belep"])
+
+
+    if isola == "Ponza":
+        filename = "Energetica.csv"
+    if isola == "Belep":
+        filename = "EnergeticaB.csv"
+
     Solare = []
     Eolico = []
     WEC = []
     Misto = []
 
-    with open("Energetica.csv", "r") as input:
+    with open(filename, "r") as input:
         read = csv.reader(input)
         for (i,row) in enumerate(read):
             if i != 0:
@@ -19,6 +27,10 @@ if __name__ == "__main__":
                 Eolico.append({"Time":i,"Power":float(row[3])})
                 WEC.append({"Time":i,"Power":float(row[5])})
 
+    char_data_consumi = pd.DataFrame(
+        Misto,
+        columns=["Time","Consumi"]
+    )
     char_data_S = pd.DataFrame(
         Solare,
         columns=["Time","Power"]
@@ -58,6 +70,8 @@ if __name__ == "__main__":
         Misto[6291:8519],
         columns=["Time","Solare","Eolico","WEC","Consumi"]
     )
+    st.header("Curva dei :red[Consumi] annui")
+    st.line_chart(data=char_data_consumi,x = "Time", y = "Consumi")
     st.header("Curva :green[mista] di tutte I CF annuali")
     st.line_chart(data=data_misti, x = 'Time', y = ["Solare","Eolico","WEC"])
     with st.expander("Curve Singole"):
@@ -76,4 +90,3 @@ if __name__ == "__main__":
         st.line_chart(data=dati_Estate, x = 'Time', y = ["Solare","Eolico","WEC","Consumi"])
         st.header("Curva mista di tutti i CF in :orange[Autunno]")
         st.line_chart(data=dati_Autunno, x = 'Time', y = ["Solare","Eolico","WEC","Consumi"])
-
